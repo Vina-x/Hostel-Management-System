@@ -1,26 +1,47 @@
-import React from 'react';
-import { Bell, Search } from 'lucide-react';
+import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
+
   return (
-    <div className="h-16 border-b border-zinc-800 bg-zinc-900/20 backdrop-blur-md px-6 flex items-center justify-between text-white">
-      <div className="relative w-64">
-        <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-          size={16}
-        />
+    <header className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-xl">
+      <div className="flex items-center justify-between px-4 py-4 md:px-6">
 
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
-        />
+        <div>
+          <h1 className="text-lg font-bold">
+            Hostel Management
+          </h1>
+
+          <p className="text-xs text-zinc-500">
+            Smart Hostel System
+          </p>
+        </div>
+
+        {user && (
+          <div className="flex items-center gap-3">
+
+            <div className="hidden text-right sm:block">
+              <p className="text-sm font-semibold">
+                {user.name}
+              </p>
+
+              <p className="text-xs text-zinc-500">
+                {user.role}
+              </p>
+            </div>
+
+            <button
+              onClick={logout}
+              className="rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500 hover:text-white"
+            >
+              Logout
+            </button>
+
+          </div>
+        )}
+
       </div>
-
-      <button className="p-2 hover:bg-zinc-900 rounded-xl transition-all relative text-zinc-400 hover:text-white">
-        <Bell size={20} />
-        <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />
-      </button>
-    </div>
+    </header>
   );
 }

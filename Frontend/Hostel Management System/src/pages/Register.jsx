@@ -1,258 +1,178 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  User,
-  Mail,
-  Lock,
-  ArrowRight,
-  Loader2,
-  Building2,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { registerAPI } from "../services/api";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     role: "Student",
   });
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (error) {
-      setError("");
-    }
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     setError("");
-    setLoading(true);
 
-    try {
-      await registerAPI(formData);
-
-      alert("Registration successful! Please login.");
-      navigate("/login");
-    } catch (err) {
-      console.error("Registration Error:", err);
-
-      setError(
-        err.response?.data?.message ||
-          "Registration failed! Please try again."
-      );
-    } finally {
-      setLoading(false);
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
+      return;
     }
+
+    if (form.password.length < 6) {
+      setError("Password must contain at least 6 characters");
+      return;
+    }
+
+    const result = register({
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      role: form.role,
+    });
+
+    if (!result.success) {
+      setError(result.message);
+      return;
+    }
+
+    alert("Registration successful! Please login.");
+
+    navigate("/login");
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-950 via-zinc-900 to-slate-800 px-4 py-8">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 py-10 text-white">
 
-      <motion.div
-        initial={{ opacity: 0, y: 25, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900/60 backdrop-blur-xl p-8 shadow-2xl"
-      >
+      <div className="w-full max-w-md">
 
-        <div className="flex flex-col items-center mb-8">
+        <Link
+          to="/"
+          className="mb-6 block text-center text-sm text-zinc-500 hover:text-blue-400"
+        >
+          ← Back to Home
+        </Link>
 
-          <motion.div
-            initial={{ rotate: -10 }}
-            animate={{ rotate: 0 }}
-            className="flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 mb-4"
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+
+          <div className="text-center">
+
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-black">
+              H
+            </div>
+
+            <h1 className="mt-5 text-3xl font-bold">
+              Create Account
+            </h1>
+
+            <p className="mt-2 text-zinc-500">
+              Join HostelHub today
+            </p>
+
+          </div>
+
+          {error && (
+            <div className="mt-6 rounded-xl bg-red-500/10 p-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+
+          <form
+            onSubmit={handleSubmit}
+            className="mt-7 space-y-4"
           >
-            <Building2 size={34} />
-          </motion.div>
 
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            Create Account
-          </h2>
+            <input
+              name="name"
+              required
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-blue-500"
+            />
 
-          <p className="text-sm text-zinc-400 mt-2 text-center">
-            Register to access the Smart Hostel Portal
+            <input
+              name="email"
+              type="email"
+              required
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email Address"
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-blue-500"
+            />
+
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-blue-500"
+            >
+              <option value="Student">
+                Student
+              </option>
+
+              <option value="Warden">
+                Warden
+              </option>
+            </select>
+
+            <input
+              name="password"
+              type="password"
+              required
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-blue-500"
+            />
+
+            <input
+              name="confirmPassword"
+              type="password"
+              required
+              value={form.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm Password"
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none focus:border-blue-500"
+            />
+
+            <button
+              type="submit"
+              className="w-full rounded-xl bg-blue-600 py-3 font-bold hover:bg-blue-700"
+            >
+              Create Account
+            </button>
+
+          </form>
+
+          <p className="mt-6 text-center text-sm text-zinc-500">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="font-semibold text-blue-400"
+            >
+              Login
+            </Link>
           </p>
 
         </div>
 
-       
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-5 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
-          >
-            {error}
-          </motion.div>
-        )}
+      </div>
 
-   
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-       
-          <div>
-            <label className="block mb-2 text-xs font-medium text-zinc-300">
-              FULL NAME
-            </label>
-
-            <div className="relative">
-
-              <User
-                size={18}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
-              />
-
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Enter your full name"
-                autoComplete="name"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-950/50 py-3 pl-11 pr-4 text-sm text-white placeholder:text-zinc-600 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                required
-              />
-
-            </div>
-          </div>
-
-         
-          <div>
-            <label className="block mb-2 text-xs font-medium text-zinc-300">
-              EMAIL ID
-            </label>
-
-            <div className="relative">
-
-              <Mail
-                size={18}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
-              />
-
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                autoComplete="email"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-950/50 py-3 pl-11 pr-4 text-sm text-white placeholder:text-zinc-600 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                required
-              />
-
-            </div>
-          </div>
-
-     
-          <div>
-            <label className="block mb-2 text-xs font-medium text-zinc-300">
-              PASSWORD
-            </label>
-
-            <div className="relative">
-
-              <Lock
-                size={18}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
-              />
-
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Create a password"
-                autoComplete="new-password"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-950/50 py-3 pl-11 pr-4 text-sm text-white placeholder:text-zinc-600 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                required
-              />
-
-            </div>
-          </div>
-
-         
-          <div>
-            <label className="block mb-2 text-xs font-medium text-zinc-300">
-              SELECT ROLE
-            </label>
-
-            <div className="flex gap-4">
-
-              {["Student", "Warden"].map((role) => (
-                <button
-                  type="button"
-                  key={role}
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      role,
-                    }))
-                  }
-                  className={`flex-1 rounded-xl border py-3 text-sm font-medium transition-all ${
-                    formData.role === role
-                      ? "bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-lg shadow-indigo-500/10"
-                      : "bg-zinc-950/30 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300"
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
-
-            </div>
-          </div>
-
-          
-          <motion.button
-            type="submit"
-            disabled={loading}
-            whileHover={{ scale: loading ? 1 : 1.02 }}
-            whileTap={{ scale: loading ? 1 : 0.98 }}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-medium text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-
-            {loading ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Creating Account...
-              </>
-            ) : (
-              <>
-                Create Account
-                <ArrowRight size={16} />
-              </>
-            )}
-
-          </motion.button>
-
-         
-          <p className="mt-5 text-center text-xs text-zinc-500">
-            Already have an account?{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className="text-indigo-400 transition hover:text-indigo-300 hover:underline"
-            >
-              Login Here
-            </button>
-          </p>
-
-        </form>
-      </motion.div>
     </div>
   );
 }
